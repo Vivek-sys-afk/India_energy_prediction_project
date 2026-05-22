@@ -1,49 +1,50 @@
 # ⚡ India Energy Transition & Grid Decarbonization Sandbox
 
-An interactive, machine-learning-powered data science platform designed to model and simulate India's electricity grid decarbonization, capacity expansion, and power sector emissions.
+An interactive, machine-learning-powered web dashboard designed to model and simulate India's electricity grid decarbonization, capacity expansion, and power sector emissions.
 
-Built using **Python, Streamlit, Plotly, and Scikit-Learn**, this application translates raw long-format electricity statistics into actionable insights and a live transition sandbox.
+Built as a **static single-page application (HTML, CSS, JS)** using **Plotly.js and PapaParse**, this sandbox runs machine learning models entirely client-side in the browser. It is fully ready for zero-cost, permanent hosting on **GitHub Pages**.
 
 ---
 
 ## 🚀 Live Interactive Dashboard
-The project is configured for instant deployment to **Streamlit Community Cloud** directly from GitHub.
+The project is configured to run instantly on any web browser and can be hosted for free on **GitHub Pages**.
 
 ### Key Core Sections:
 1. **📊 National Dashboard**: Track India's electricity capacity growth (Fossil vs. Clean), monthly generation fuel mix shares, and CO2 emissions intensity trends (2019-2025).
 2. **🏢 State-Level Explorer**: Drill down into individual states or Union Territories (e.g., Gujarat, Rajasthan) to analyze their capacity mix, monthly generation, and rank states using dynamic leaderboards.
 3. **🔮 ML Forecast Simulator**: 
    - **Electricity Demand Forecast**: A time-series forecasting model projecting India's electricity demand over the next 24 months.
-   - **Grid Carbon Intensity Sandbox**: An interactive simulator where you adjust renewable shares and use a machine learning model to estimate the resulting grid carbon intensity ($gCO_2/kWh$).
+   - **Grid Carbon Intensity Sandbox**: An interactive simulator where you adjust renewable shares and use a machine learning model to estimate the resulting grid carbon intensity ($gCO_2/kWh$) in real-time.
 
 ---
 
-## 🧠 Machine Learning Engine
+## 🧠 Client-Side Machine Learning Engine
 
-The project utilizes two machine learning models developed in the [Jupyter Notebook](india_energy_analysis_ml.ipynb):
+The machine learning models are executed in pure JavaScript inside `app.js` using coefficients trained in the project's [Jupyter Notebook](india_energy_analysis_ml.ipynb):
 
 ### 1. Autoregressive Ridge demand Forecaster (MAPE: 2.85%)
 * **Task**: Forecast national monthly generation requirement (GWh).
-* **Features**: Trend component, monthly seasonality dummies, and autoregressive lag variables (Lag-1, Lag-2, and Lag-12).
+* **Formula**: Autoregressive rolling forecast using trend, monthly seasonality dummies, and autoregressive lag variables (Lag-1, Lag-2, and Lag-12).
 * **Validation**: Out-of-time validation on the 2025 dataset shows a Mean Absolute Percentage Error (MAPE) of **2.85%**.
 
-### 2. Random Forest emissions Regressor ($R^2 > 98\%$)
+### 2. Grid Carbon Intensity Predictor ($R^2 \approx 100\%$)
 * **Task**: Predict grid CO2 intensity ($gCO_2/kWh$) based on electricity generation fuel shares.
-* **Features**: Coal share, Gas share, Hydro share, Nuclear share, Solar share, and Wind share.
-* **Insight**: Coal share accounts for **96.4%** of the Gini importance, indicating that grid decarbonization remains fundamentally constrained by coal load factor displacement.
+* **Formula**: Linear Regression model mapping the exact carbon contributions of Coal, Gas, Solar, Wind, Hydro, and Nuclear shares.
+* **Validation**: R-squared of **0.999997** and MAE of **0.08 gCO2/kWh** against historical carbon data, representing a mathematically exact fit for grid emissions calculation.
 
 ---
 
 ## 📁 Repository Structure
 
 ```filepath
+├── index.html                         # Dashboard markup and layouts
+├── styles.css                         # Glassmorphic dark mode styling
+├── app.js                             # App routing, charts, & client-side ML
 ├── pivoted_india_total_monthly.csv    # Cleaned pivoted national data
 ├── pivoted_states_monthly.csv         # Cleaned pivoted state data
-├── emissions_rf_model.pkl             # Pre-trained Random Forest model
-├── app.py                             # Streamlit dashboard application
-├── build_project.py                   # Automation script for pipeline & notebook
-├── india_energy_analysis_ml.ipynb     # Fully executed Jupyter Notebook with plots
-├── requirements.txt                   # Dependency list for environment setup
+├── build_project.py                   # Automation script for raw data pipeline
+├── india_energy_analysis_ml.ipynb     # Pre-rendered Data Science Jupyter Notebook
+├── requirements.txt                   # Optional dependencies for the raw pipeline
 └── README.md                          # Project documentation (this file)
 ```
 
@@ -51,64 +52,42 @@ The project utilizes two machine learning models developed in the [Jupyter Noteb
 
 ## 🛠️ Local Setup & Run
 
-Follow these instructions to run the application locally on your machine:
+No compilation, Node.js, or Python backends are required to run the dashboard!
 
-### 1. Clone the Repository
+### Option A: Open Directly
+Simply double-click the `index.html` file to open it in your web browser. 
+
+*Note: Some browsers block local file reading (CORS) when accessing CSV files. If charts do not load, use Option B.*
+
+### Option B: Local Web Server (Recommended)
+Run a quick local server in the project folder:
 ```bash
-git clone <your-github-repo-url>
-cd India_energy_prediction_project
-```
+# Using Python
+python -m http.server 8000
 
-### 2. Create and Activate a Virtual Environment
-```bash
-# Windows
-python -m venv .venv
-.venv\Scripts\activate
-
-# macOS / Linux
-python3 -m venv .venv
-source .venv/bin/activate
+# Using Node (if installed)
+npx serve .
 ```
-
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Run the Streamlit App
-```bash
-streamlit run app.py
-```
-This will open the dashboard in your default browser at `http://localhost:8501`.
-
-*(Optional)* If you wish to re-run the entire pipeline (processing raw files, training the models, and re-executing the Jupyter notebook), run:
-```bash
-python build_project.py
-```
+Then open your browser and navigate to `http://localhost:8000`.
 
 ---
 
-## ☁️ Deploying to Streamlit Community Cloud (Free)
+## ☁️ Deploying to GitHub Pages (Free Hosting)
 
-You can host this project live on the web for free using Streamlit Community Cloud. Follow these steps:
+Host this project live on GitHub in seconds with these steps:
 
-1. **Push to GitHub**: Create a repository on GitHub and push this codebase.
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit: India Grid transition ML sandbox"
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   git branch -M main
-   git push -u origin main
-   ```
-2. **Sign up/Log in to Streamlit**: Go to [share.streamlit.io](https://share.streamlit.io/) and log in using your GitHub account.
-3. **Deploy App**:
-   - Click **"New app"**.
-   - Select your repository (`YOUR_USERNAME/YOUR_REPO_NAME`), branch (`main`), and main file path (`app.py`).
-   - Click **"Deploy!"**.
-4. **Interact**: Your dashboard will be live on a public URL in less than a minute!
+### Step 1: Push the Repository to GitHub
+Create a new repository on GitHub (e.g., `India_energy_prediction_project`) and run:
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+git branch -M main
+git push -u origin main
+```
 
----
-
-## 📊 Data Source
-This project uses processed historical monthly capacity, generation, and emissions datasets for India's power sector, covering 2019 to late 2025.
+### Step 2: Enable GitHub Pages
+1. Go to your repository page on **GitHub**.
+2. Click on the **Settings** tab.
+3. In the left sidebar, under "Code and automation", click **Pages**.
+4. Under "Build and deployment", set the source to **Deploy from a branch**.
+5. Under "Branch", select `main` and `/ (root)`, then click **Save**.
+6. Refresh the page after 1 minute; GitHub will display your live URL (e.g., `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/`).
