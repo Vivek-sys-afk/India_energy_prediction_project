@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ India Grid Decarbonization Sandbox</title>
+    
+    <!-- External CSS Libraries -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Plotly.js and PapaParse via CDN -->
+    <script src="https://cdn.plot.ly/plotly-2.29.1.min.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <h2 style="font-family: 'Outfit', sans-serif; font-weight: 600;">⚡ Initializing Grid Decarbonization Engine...</h2>
+        <p style="color: var(--text-secondary);">Loading pivoted national and state-level datasets</p>
+    </div>
+
+    <!-- Sidebar Panel -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <i class="fa-solid fa-bolt"></i>
+            <h2>India Grid Sandbox</h2>
+            <p>Transition & Emissions Forecast Engine</p>
+        </div>
+        
+        <ul class="nav-menu">
+            <li>
+                <a href="#" class="nav-item active" data-page="page-national">
+                    <i class="fa-solid fa-chart-line"></i>National Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-item" data-page="page-state">
+                    <i class="fa-solid fa-building-flag"></i>State-level Explorer
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-item" data-page="page-ml">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>ML Forecast Simulator
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <h4>About the Project</h4>
+            <p>This sandbox models India's power sector grid transition. It integrates Autoregressive Ridge forecasting models and Linear Regression grid CO2 intensity prediction, trained on monthly energy and capacity datasets.</p>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        
+        <!-- SECTION 1: National Dashboard -->
+        <section id="page-national" class="page-section active">
+            <header>
+                <h1>📊 National Energy & Emissions Overview</h1>
+                <p>An executive summary of India's electricity capacity, fuel generation mix, and carbon footprint trends (2019 - 2025).</p>
+            </header>
+            
+            <!-- KPI Metrics -->
+            <div class="metrics-row">
+                <div class="panel metric-card teal">
+                    <span class="metric-label">Monthly Generation</span>
+                    <div id="nat-metric-gen" class="metric-value">-</div>
+                    <span id="nat-delta-gen" class="metric-delta">-</span>
+                </div>
+                <div class="panel metric-card green">
+                    <span class="metric-label">Clean Energy Share</span>
+                    <div id="nat-metric-clean" class="metric-value">-</div>
+                    <span id="nat-delta-clean" class="metric-delta">-</span>
+                </div>
+                <div class="panel metric-card yellow">
+                    <span class="metric-label">Grid CO2 Intensity</span>
+                    <div id="nat-metric-co2" class="metric-value">-</div>
+                    <span id="nat-delta-co2" class="metric-delta">-</span>
+                </div>
+                <div class="panel metric-card red">
+                    <span class="metric-label">Power Sector Emissions</span>
+                    <div id="nat-metric-em" class="metric-value">-</div>
+                    <span id="nat-delta-em" class="metric-delta">-</span>
+                </div>
+            </div>
+            
+            <!-- Visualizations Grid -->
+            <div class="chart-grid">
+                <div class="panel">
+                    <h3><i class="fa-solid fa-chart-area" style="color: var(--accent-green)"></i> Capacity Expansion (Fossil vs. Clean)</h3>
+                    <div id="chart-capacity" class="chart-container"></div>
+                </div>
+                <div class="panel">
+                    <h3><i class="fa-solid fa-chart-pie" style="color: var(--accent-yellow)"></i> Electricity Generation Mix Share (%)</h3>
+                    <div id="chart-generation-mix" class="chart-container"></div>
+                </div>
+                <div class="panel full-width">
+                    <h3><i class="fa-solid fa-smog" style="color: var(--accent-red)"></i> Power Sector CO2 Emissions & Intensity Trend</h3>
+                    <div id="chart-emissions-trend" class="chart-container" style="min-height: 420px;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: State-level Explorer -->
+        <section id="page-state" class="page-section">
+            <header>
+                <h1>🏢 State-level Energy Profiles & Leaderboard</h1>
+                <p>Explore energy capacity mix, generation, and rankings across India's states and Union Territories.</p>
+            </header>
+            
+            <div class="panel">
+                <div class="controls-header">
+                    <h3><i class="fa-solid fa-sliders" style="color: var(--accent-teal)"></i> Filter by State / Territory</h3>
+                    <div class="select-wrapper">
+                        <select id="state-selector">
+                            <!-- Options filled dynamically in app.js -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- State KPIs -->
+            <div class="metrics-row">
+                <div class="panel metric-card teal">
+                    <span class="metric-label">Total Generation (Latest Month)</span>
+                    <div id="state-metric-gen" class="metric-value">-</div>
+                </div>
+                <div class="panel metric-card green">
+                    <span class="metric-label">Solar Capacity (Latest Month)</span>
+                    <div id="state-metric-solar" class="metric-value">-</div>
+                </div>
+                <div class="panel metric-card red">
+                    <span class="metric-label">Power Sector Carbon Footprint</span>
+                    <div id="state-metric-emissions" class="metric-value">-</div>
+                </div>
+            </div>
+            
+            <div class="chart-grid">
+                <div class="panel">
+                    <h3><i class="fa-solid fa-chart-pie" style="color: var(--accent-yellow)"></i> Capacity Mix (MW)</h3>
+                    <div id="state-chart-pie" class="chart-container"></div>
+                </div>
+                <div class="panel">
+                    <h3><i class="fa-solid fa-area-chart" style="color: var(--accent-blue)"></i> Monthly Electricity Generation (GWh)</h3>
+                    <div id="state-chart-gen" class="chart-container"></div>
+                </div>
+                <div class="panel full-width">
+                    <div class="controls-header">
+                        <h3><i class="fa-solid fa-ranking-star" style="color: var(--accent-teal)"></i> State Leaderboard (Top 10)</h3>
+                        <div class="select-wrapper">
+                            <select id="rank-metric-selector">
+                                <option value="solar_cap">Solar Capacity (MW)</option>
+                                <option value="wind_cap">Wind Capacity (MW)</option>
+                                <option value="fossil_cap">Fossil Capacity (MW)</option>
+                                <option value="clean_gen_pct">Clean Generation Share (%)</option>
+                                <option value="total_emissions">Total Emissions (ktCO2)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="state-chart-leaderboard" class="chart-container" style="min-height: 420px;"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: ML Forecast Simulator -->
+        <section id="page-ml" class="page-section">
+            <header>
+                <h1>🔮 Grid Decarbonization Scenario Simulator</h1>
+                <p>Use Machine Learning to simulate what India's Grid Carbon Intensity will look like under customizable energy transition scenarios.</p>
+            </header>
+            
+            <div class="panel">
+                <h3><i class="fa-solid fa-history" style="color: var(--accent-green)"></i> Part 1: Electricity Demand Forecast (Next 24 Months)</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                    This Autoregressive Ridge model (MAPE: 2.85% validation error) predicts India's monthly electricity generation requirement (GWh) to support sustained economic growth.
+                </p>
+                <div id="forecast-chart" class="chart-container"></div>
+            </div>
+            
+            <div class="panel">
+                <h3><i class="fa-solid fa-sliders" style="color: var(--accent-teal)"></i> Part 2: CO2 Grid Intensity Simulation (2026 Sandbox)</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.95rem;">
+                    Drag the slider to adjust the Clean energy generation share for 2026. The Linear Regression predictor model ($R^2 \approx 100\%$) will instantly compute the resulting grid carbon intensity ($gCO_2/kWh$).
+                </p>
+                
+                <div class="simulator-layout">
+                    <!-- Left: Sliders & Shares Mix Table -->
+                    <div class="panel" style="background-color: rgba(255,255,255,0.01); border-color: rgba(255,255,255,0.03);">
+                        <div class="slider-container">
+                            <div class="slider-group">
+                                <div class="slider-labels">
+                                    <span>Clean Energy Share</span>
+                                    <span id="clean-share-val" class="slider-val">-</span>
+                                </div>
+                                <input type="range" id="clean-share-slider" min="15" max="65" step="1">
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin-top: 2rem; margin-bottom: 0.75rem; font-size: 0.95rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px;">Simulated Energy Mix</h4>
+                        <table class="mix-table">
+                            <thead>
+                                <tr>
+                                    <th>Fuel Source</th>
+                                    <th class="share-col">Share (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fuel-pill"><div class="fuel-color-dot" style="background: #2c3e50;"></div> Coal</td>
+                                    <td id="sim-val-coal" class="share-col">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="fuel-pill"><div class="fuel-color-dot" style="background: #e67e22;"></div> Gas</td>
+                                    <td id="sim-val-gas" class="share-col">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="fuel-pill"><div class="fuel-color-dot" style="background: #f1c40f;"></div> Solar</td>
+                                    <td id="sim-val-solar" class="share-col">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="fuel-pill"><div class="fuel-color-dot" style="background: #2ecc71;"></div> Wind</td>
+                                    <td id="sim-val-wind" class="share-col">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="fuel-pill"><div class="fuel-color-dot" style="background: #2980b9;"></div> Hydro</td>
+                                    <td id="sim-val-hydro" class="share-col">-</td>
+                                </tr>
+                                <tr>
+                                    <td class="fuel-pill"><div class="fuel-color-dot" style="background: #3498db;"></div> Nuclear</td>
+                                    <td id="sim-val-nuclear" class="share-col">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Right: Model Gauge and Metrics -->
+                    <div class="panel" style="background-color: rgba(255,255,255,0.01); border-color: rgba(255,255,255,0.03); display: flex; flex-direction: column; gap: 1.5rem; justify-content: center;">
+                        <div class="metrics-row" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                            <div class="panel metric-card teal" style="background-color: rgba(0,0,0,0.1);">
+                                <span class="metric-label" style="font-size: 0.75rem;">Simulated CO2 Intensity</span>
+                                <div id="sim-metric-co2" class="metric-value" style="font-size: 1.5rem;">-</div>
+                                <span id="sim-delta-co2" class="metric-delta">-</span>
+                            </div>
+                            <div class="panel metric-card green" style="background-color: rgba(0,0,0,0.1);">
+                                <span class="metric-label" style="font-size: 0.75rem;">Carbon Status</span>
+                                <div id="sim-metric-status" class="metric-value" style="font-size: 1.3rem; color: var(--text-primary);">🟢 Decarbonizing</div>
+                            </div>
+                        </div>
+                        
+                        <div id="gauge-chart" style="width: 100%; height: 250px;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Application Javascript Controller -->
+    <script src="app.js"></script>
+</body>
+</html>
