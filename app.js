@@ -99,22 +99,17 @@ async function loadData() {
                     complete: (resultsStates) => {
                         df_states = resultsStates.data;
                         
-                        // Sort by Date
-                        df_nat.sort((a, b) => new Date(a.Date) - new Date(b.Date));
-                        df_states.sort((a, b) => new Date(a.Date) - new Date(b.Date));
+                        // Sort by Date (using string comparison which is perfect for YYYY-MM-DD format)
+                        df_nat.sort((a, b) => a.Date.localeCompare(b.Date));
+                        df_states.sort((a, b) => a.Date.localeCompare(b.Date));
                         
                         // Extract latest records
                         latestRow = df_nat[df_nat.length - 1];
                         
-                        // Find matching row from one year ago
-                        const latestDate = new Date(latestRow.Date);
-                        const prevYearDate = new Date(latestDate);
-                        prevYearDate.setFullYear(latestDate.getFullYear() - 1);
-                        
-                        prevYearRow = df_nat.find(row => {
-                            const d = new Date(row.Date);
-                            return d.getFullYear() === prevYearDate.getFullYear() && d.getMonth() === prevYearDate.getMonth();
-                        }) || df_nat[0];
+                        // Find matching row from one year ago without fragile Date parsing
+                        const latestParts = latestRow.Date.split('-');
+                        const prevYearStr = `${parseInt(latestParts[0], 10) - 1}-${latestParts[1]}-01`;
+                        prevYearRow = df_nat.find(row => row.Date === prevYearStr) || df_nat[df_nat.length - 13] || df_nat[0];
 
                         // Hide loading overlay
                         const loader = document.getElementById("loading-overlay");
@@ -491,19 +486,26 @@ function renderMLForecastSimulator() {
 // 24-Month Demand Forecasting (Autoregressive Ridge Model in JS)
 function calculateAndPlotForecast() {
     const histGen = df_nat.map(row => row.Total_Generation_GWh);
-    const histDates = df_nat.map(row => new Date(row.Date));
+    const histDates = df_nat.map(row => row.Date); // Keep as raw string format (YYYY-MM-DD)
     
-    const latestDate = histDates[histDates.length - 1];
+    const latestDateStr = histDates[histDates.length - 1];
+    const parts = latestDateStr.split('-');
+    let year = parseInt(parts[0], 10);
+    let month = parseInt(parts[1], 10);
+    
     const futureDates = [];
     const futurePreds = [];
 
     // Rolling autoregressive forecast step-by-step
     for (let i = 1; i <= 24; i++) {
-        const currDate = new Date(latestDate);
-        currDate.setMonth(latestDate.getMonth() + i);
-        futureDates.push(currDate);
+        month++;
+        if (month > 12) {
+            month = 1;
+            year++;
+        }
+        const dateStr = `${year}-${month.toString().padStart(2, '0')}-01`;
+        futureDates.push(dateStr);
 
-        const month = currDate.getMonth() + 1; // 1-indexed (Jan is 1, Feb is 2...)
         const trend = df_nat.length + i - 1;
 
         // Lag calculations
@@ -542,7 +544,7 @@ function calculateAndPlotForecast() {
         y: histGen,
         name: 'Historical Demand',
         mode: 'lines',
-        line: { color: '#475569', width: 2 }
+        line: { color: '#94a3b8', width: 2.5 } // Light slate gray for clean high-contrast readability
     };
     
     const tracePred = {
@@ -557,7 +559,7 @@ function calculateAndPlotForecast() {
         template: 'plotly_dark',
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
-        margin: { l: 40, r: 10, t: 10, b: 40 },
+        margin: { l: 45, r: 10, t: 10, b: 40 },
         xaxis: { title: 'Year', showgrid: false },
         yaxis: { title: 'Demand Requirement (GWh)', gridcolor: 'rgba(255,255,255,0.05)' },
         legend: { orientation: 'h', y: 1.1, x: 1, xanchor: 'right' },
@@ -652,8 +654,9 @@ function simulateEmissionsScenario(cleanPct) {
         template: 'plotly_dark',
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
-        margin: { l: 20, r: 20, t: 40, b: 10 },
-        height: 250
+        margin: { l: 30, r: 30, t: 50, b: 10 },
+        height: 250,
+        font: { color: "white", family: "'Outfit', sans-serif" }
     };
 
     Plotly.newPlot('gauge-chart', [gaugeTrace], gaugeLayout, { responsive: true });
