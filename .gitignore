@@ -1,0 +1,32 @@
+# Python caches and byte-code
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Scratch and intermediate notebooks
+first.ipynb
+
+# Raw large datasets
+india_monthly_full_release_long_format.csv
+india_yearly_full_release_long_format.csv
+
+# Static generated image plots
+*.png
+
+# IDE settings
+.vscode/
+.idea/
